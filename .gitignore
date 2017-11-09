@@ -1,5 +1,5 @@
 .DS_Store
 .log
-docs
+db
 config
 node_modules
