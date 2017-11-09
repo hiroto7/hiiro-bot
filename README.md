@@ -4,4 +4,5 @@
 
 ```
 npm Install
+cp -r config-sample config
 ```
