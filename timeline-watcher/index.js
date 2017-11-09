@@ -82,14 +82,10 @@ module.exports = class TimelineWatcher {
 
     if (material) {
       let prob = 1;
-      prob *= Util.getCurrentScore(
-        Util.getDeepObject(db, 'scores', 'users', tweet.user.id_str)
-      );
+      prob *= Util.getCurrentScore(db.dig('scores', 'users', tweet.user.id_str));
       prob *= Math.pow(2, Math.min(tweet.text.length, 140) / 140);
       if (material.useScore) {
-        prob *= Util.getCurrentScore(
-          Util.getDeepObject(db, 'scores', 'responses', material.name)
-        );
+        prob *= Util.getCurrentScore(db.dig('scores', 'responses', material.name));
       }
 
       if (Math.random() < prob) {
@@ -111,16 +107,12 @@ module.exports = class TimelineWatcher {
         }
 
         if (posted) {
-          Util.halveScore(
-            Util.getDeepObject(db, 'scores', 'users', tweet.user.id_str)
-          );
+          Util.halveScore(db.dig('scores', 'users', tweet.user.id_str));
           Util.getDeepObject(
             db, 'scores', 'users', tweet.user.id_str
           ).screen_name = tweet.user.screen_name;
           if (material.useScore) {
-            Util.halveScore(
-              Util.getDeepObject(db, 'scores', 'responses', material.name)
-            );
+            Util.halveScore(db.dig('scores', 'responses', material.name));
           }
           dbJSON.writeSync();
         }
@@ -180,17 +172,14 @@ module.exports = class TimelineWatcher {
   }
 
   async processPastTweets() {
-    const tweets = await this.getPastTweets(
-      Util.getDeepObject(db, 'lastTweet').id_str
-    );
+    const tweets = await this.getPastTweets(db.dig('lastTweet').id_str);
 
     if (tweets.length !== 0) {
       for (let i in tweets) {
         await this.processTweet(new Tweet(tweets[i]));
       }
 
-      Util.getDeepObject(db, 'lastTweet').id_str =
-        tweets[tweets.length - 1].id_str;
+      db.dig('lastTweet').id_str = tweets[tweets.length - 1].id_str;
       dbJSON.writeSync();
 
       console.log(`${tweets.length}件のツイートを処理しました`);
@@ -204,7 +193,7 @@ module.exports = class TimelineWatcher {
     stream.on('data', async tweet => {
       await this.processTweet(new Tweet(tweet), true);
 
-      Util.getDeepObject(db, 'lastTweet').id_str = tweet.id_str;
+      db.dig('lastTweet').id_str = tweet.id_str;
       dbJSON.writeSync();
     });
     stream.on('error', error => {
