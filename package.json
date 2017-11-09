@@ -1,0 +1,30 @@
+{
+  "name": "hiiro-bot",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "dependencies": {
+    "bignumber.js": "^4.1.0",
+    "colors": "^1.1.2",
+    "moment": "^2.19.1",
+    "twitter": "^1.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiroto7/hiiro-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hiroto7/hiiro-bot/issues"
+  },
+  "homepage": "https://github.com/hiroto7/hiiro-bot#readme"
+}

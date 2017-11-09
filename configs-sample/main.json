@@ -1,0 +1,15 @@
+{
+  "me": {
+    "id": 0,
+    "id_str": ""
+  },
+  "keys": {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token_key": "",
+    "access_token_secret": ""
+  },
+  "collection": {
+    "timeline_id": "custom-0"
+  }
+}
