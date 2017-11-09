@@ -9,8 +9,8 @@ const Util = require('../lib/util.js');
 const Tweet = require('../lib/tweet.js');
 const JSONUpdater = require('../lib/json-updater.js');
 
-const config = require('../configs/main.json');
-const materials = require('../configs/materials.js');
+const config = require('../config/main.json');
+const materials = require('../config/materials.js');
 
 const docsJSON = new JSONUpdater('./docs/timeline-watcher.json');
 const docs = docsJSON.value;

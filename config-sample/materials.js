@@ -4,21 +4,21 @@ const Util = require('../lib/util.js');
 
 const common = {
   regs: [
-    /ひいろ/gi, //通知とエアリプの両方の対象になる正規表現
-    /hiiro/gi //通知のみの対象になる正規表現
+    /ひいろ/i, //通知とエアリプの両方の対象になる正規表現
+    /hiiro/i //通知のみの対象になる正規表現
   ]
 };
 
 const responses = [
   // 上のものが優先される
   {
-    reg: /bot/gi,
+    reg: /bot/i,
     getTweetBody: function(tweet) {
       return tweet.text.match(this.reg)[0] + Util.pickRandom('です', 'だよ');
     }
   },
   {
-    reg: /こんにちは/gi,
+    reg: /こんにちは/i,
     getTweetBody: function(tweet) {
       return `${tweet.uset.name}さん、こんにちは！`;
     }
