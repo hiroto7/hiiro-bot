@@ -6,7 +6,7 @@ const moment = require('moment');
 require('colors');
 
 const Util = require('../lib/util.js');
-const Tweet = require('../lib/tweet.js');
+const Tweet = require('../lib/tweet.js').tweet;
 const JSONUpdater = require('../lib/json-updater.js');
 
 const config = require('../config/main.json');
