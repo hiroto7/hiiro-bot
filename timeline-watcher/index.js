@@ -132,7 +132,7 @@ module.exports = class TimelineWatcher {
       }
 
       if (isStreaming && !tweet.isReply() &&
-          await tweet.user.isFollowing(config.me, client) &&
+          await tweet.user.isFollowing(config.me, this.client) &&
           materials.common.regs[0].test(tweet.text)) {
         ps.push(this.airReply(tweet));
       }
