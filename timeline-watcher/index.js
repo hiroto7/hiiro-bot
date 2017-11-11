@@ -12,8 +12,12 @@ const JSONUpdater = require('../lib/json-updater.js');
 const config = require('../config/main.json');
 const materials = require('../config/materials.js');
 
-const dbJSON = new JSONUpdater('./db/timeline-watcher.json');
+const dbJSON =
+  new JSONUpdater('./db/timeline-watcher/main.json', undefined, 2);
 const db = dbJSON.value;
+const db1JSON =
+  new JSONUpdater('./db/timeline-watcher/timeline-by-period.json');
+const db1 = db1JSON.value;
 
 module.exports = class TimelineWatcher {
   constructor(client) {
@@ -141,10 +145,9 @@ module.exports = class TimelineWatcher {
     db.dig('lastTweet').id_str = tweet.id_str;
 
     const createdAt = new Date(tweet.created_at);
-    const counter = db.dig('homeTimeline', 'byPeriod');
     const byDate = (
-      counter[moment(createdAt).format('YYYY-MM-DD')] =
-      counter[moment(createdAt).format('YYYY-MM-DD')] || {
+      db1[moment(createdAt).format('YYYY-MM-DD')] =
+      db1[moment(createdAt).format('YYYY-MM-DD')] || {
         total: 0
       }
     );
@@ -207,6 +210,7 @@ module.exports = class TimelineWatcher {
       }
 
       dbJSON.writeSync();
+      db1JSON.writeSync();
 
       console.log(`${tweets.length}件のツイートを処理しました`);
     }
@@ -220,6 +224,7 @@ module.exports = class TimelineWatcher {
       await this.processTweet(new Tweet(tweet), true);
 
       dbJSON.writeSync();
+      db1JSON.writeSync();
     });
     stream.on('error', error => {
       console.log(error);
