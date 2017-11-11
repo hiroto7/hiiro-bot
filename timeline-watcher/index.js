@@ -121,7 +121,7 @@ module.exports = class TimelineWatcher {
   }
 
   async processTweet(tweet, isStreaming=false) {
-    let ps = [];
+    const ps = [];
 
     if (tweet.user && !tweet.isTweetedBy(config.me) &&
         !tweet.isRetweet() && !tweet.isReplyTo(config.me) &&
@@ -137,6 +137,32 @@ module.exports = class TimelineWatcher {
         ps.push(this.airReply(tweet));
       }
     }
+
+    db.dig('lastTweet').id_str = tweet.id_str;
+
+    const createdAt = new Date(tweet.created_at);
+    const counter = db.dig('homeTimeline', 'byPeriod');
+    const byDate = (
+      counter[moment(createdAt).format('YYYY-MM-DD')] =
+      counter[moment(createdAt).format('YYYY-MM-DD')] || {
+        total: 0
+      }
+    );
+    const byHour = (
+      byDate[createdAt.getHours()] =
+      byDate[createdAt.getHours()] || {
+        total: 0
+      }
+    );
+    const byMinutes = (
+      byHour[createdAt.getMinutes()] =
+      byHour[createdAt.getMinutes()] || {
+        total: 0
+      }
+    );
+    byDate.total++;
+    byHour.total++;
+    byMinutes.total++;
 
     return Promise.all(ps);
   }
@@ -180,7 +206,6 @@ module.exports = class TimelineWatcher {
         await this.processTweet(new Tweet(tweets[i]));
       }
 
-      db.dig('lastTweet').id_str = tweets[tweets.length - 1].id_str;
       dbJSON.writeSync();
 
       console.log(`${tweets.length}件のツイートを処理しました`);
@@ -194,7 +219,6 @@ module.exports = class TimelineWatcher {
     stream.on('data', async tweet => {
       await this.processTweet(new Tweet(tweet), true);
 
-      db.dig('lastTweet').id_str = tweet.id_str;
       dbJSON.writeSync();
     });
     stream.on('error', error => {
