@@ -16,7 +16,7 @@ const dbJSON =
   new JSONUpdater('./db/timeline-watcher/main.json', undefined, 2);
 const db = dbJSON.value;
 const db1JSON =
-  new JSONUpdater('./db/timeline-watcher/timeline-by-period.json');
+  new JSONUpdater('./db/timeline-watcher/timeline-by-period.json', undefined, 2);
 const db1 = db1JSON.value;
 
 module.exports = class TimelineWatcher {
@@ -157,15 +157,8 @@ module.exports = class TimelineWatcher {
         total: 0
       }
     );
-    const byMinutes = (
-      byHour[createdAt.getMinutes()] =
-      byHour[createdAt.getMinutes()] || {
-        total: 0
-      }
-    );
     byDate.total++;
     byHour.total++;
-    byMinutes.total++;
 
     return Promise.all(ps);
   }
