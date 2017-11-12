@@ -60,7 +60,7 @@ module.exports = class TimelineWatcher {
           text: tweet.getTweetURL(true)
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     } else {
       try {
@@ -69,7 +69,7 @@ module.exports = class TimelineWatcher {
           tweet_id: tweet.id_str
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
   }
@@ -107,7 +107,7 @@ module.exports = class TimelineWatcher {
           });
           posted = true;
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
 
         if (posted) {
@@ -187,7 +187,7 @@ module.exports = class TimelineWatcher {
         return [];
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return [];
     }
   }
@@ -208,17 +208,25 @@ module.exports = class TimelineWatcher {
   }
 
   async start() {
-    await this.processPastTweets();
+    try {
+      await this.processPastTweets();
 
-    const stream = this.client.stream('user');
-    stream.on('data', async tweet => {
-      await this.processTweet(new Tweet(tweet), true);
+      const stream = this.client.stream('user');
+      stream.on('data', async tweet => {
+        try {
+          await this.processTweet(new Tweet(tweet), true);
 
-      dbJSON.writeSync();
-      db1JSON.writeSync();
-    });
-    stream.on('error', error => {
-      console.log(error);
-    });
+          dbJSON.writeSync();
+          db1JSON.writeSync();
+        } catch (error) {
+          console.error(error);
+        }
+      });
+      stream.on('error', error => {
+        console.error(error);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
