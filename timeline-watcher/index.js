@@ -112,9 +112,7 @@ module.exports = class TimelineWatcher {
 
         if (posted) {
           Util.halveScore(db.dig('scores', 'users', tweet.user.id_str));
-          Util.getDeepObject(
-            db, 'scores', 'users', tweet.user.id_str
-          ).screen_name = tweet.user.screen_name;
+          db.dig('scores', 'users', tweet.user.id_str).screen_name = tweet.user.screen_name;
           if (material.useScore) {
             Util.halveScore(db.dig('scores', 'responses', material.name));
           }
