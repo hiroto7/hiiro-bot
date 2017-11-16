@@ -10,10 +10,10 @@ const Tweet = require('../lib/tweet.js').Tweet;
 const JSONUpdater = require('../lib/json-updater.js');
 
 const config = require('../config/main.json');
-const materials = require('../config/materials.js');
 
 const dbJSON =
   new JSONUpdater('./db/timeline-watcher/main.json', undefined, 2);
+const materials = require('../config/timeline-watcher/materials.js');
 const db = dbJSON.value;
 const db1JSON =
   new JSONUpdater('./db/timeline-watcher/timeline-by-period.json', undefined, 2);
