@@ -6,17 +6,20 @@ const moment = require('moment');
 require('colors');
 
 const Util = require('../lib/util.js');
-const Tweet = require('../lib/tweet.js').Tweet;
+const {Tweet, User, UserList} = require('../lib/tweet.js');
 const JSONUpdater = require('../lib/json-updater.js');
 
-const config = require('../config/main.json');
+const config0 = require('../config/main.json');
+const config1 = require('../config/timeline-watcher/main.json')
+const me = new User(config0.me);
+const myCollection = config1.collection;
+const blacklist = new UserList(config1.blacklist);
 
-const dbJSON =
-  new JSONUpdater('./db/timeline-watcher/main.json', undefined, 2);
 const materials = require('../config/timeline-watcher/materials.js');
+
+const dbJSON = new JSONUpdater('./db/timeline-watcher/main.json', undefined, 2);
+const db1JSON = new JSONUpdater('./db/timeline-watcher/timeline-by-period.json', undefined, 2);
 const db = dbJSON.value;
-const db1JSON =
-  new JSONUpdater('./db/timeline-watcher/timeline-by-period.json', undefined, 2);
 const db1 = db1JSON.value;
 
 module.exports = class TimelineWatcher {
@@ -56,7 +59,7 @@ module.exports = class TimelineWatcher {
     if (tweet.isProtected()) {
       try {
         await this.client.post('direct_messages/new', {
-          user_id: config.me.id_str,
+          user_id: me.id_str,
           text: tweet.getTweetURL(true)
         });
       } catch (error) {
@@ -65,7 +68,7 @@ module.exports = class TimelineWatcher {
     } else {
       try {
         await this.client.post('collections/entries/add', {
-          id: config.collection.timeline_id,
+          id: myCollection.timeline_id,
           tweet_id: tweet.id_str
         });
       } catch (error) {
@@ -125,17 +128,17 @@ module.exports = class TimelineWatcher {
   async processTweet(tweet, isStreaming=false) {
     const ps = [];
 
-    if (tweet.user && !tweet.isTweetedBy(config.me) &&
-        !tweet.isRetweet() && !tweet.isReplyTo(config.me) &&
-        !tweet.isQuoteOf(config.me)) {
+    if (!tweet.isTweetedBy(me) && !tweet.isRetweet() &&
+        !tweet.isReplyTo(me) && !tweet.isQuoteOf(me)) {
       if (materials.common.regs[0].test(tweet.text) ||
           materials.common.regs[1].test(tweet.text)) {
         ps.push(this.notifyMe(tweet));
       }
 
       if (isStreaming && !tweet.isReply() &&
+          !tweet.user.isListedAt(blacklist) &&
           materials.common.regs[0].test(tweet.text) &&
-          await tweet.user.isFollowing(config.me, this.client)) {
+          await tweet.user.isFollowing(me, this.client)) {
         ps.push(this.airReply(tweet));
       }
     }
@@ -214,10 +217,12 @@ module.exports = class TimelineWatcher {
       const stream = this.client.stream('user');
       stream.on('data', async tweet => {
         try {
-          await this.processTweet(new Tweet(tweet), true);
+          if (!tweet.direct_messages) {
+            await this.processTweet(new Tweet(tweet), true);
 
-          dbJSON.writeSync();
-          db1JSON.writeSync();
+            dbJSON.writeSync();
+            db1JSON.writeSync();
+          }
         } catch (error) {
           console.error(error);
         }

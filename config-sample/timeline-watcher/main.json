@@ -1,0 +1,12 @@
+{
+  "collection": {
+    "timeline_id": "custom-0"
+  },
+  "blacklist": [
+    {
+      "id": 0,
+      "id_str": "",
+      "screen_name": ""
+    }
+  ]
+}
