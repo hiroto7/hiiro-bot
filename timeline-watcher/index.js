@@ -217,7 +217,7 @@ module.exports = class TimelineWatcher {
       const stream = this.client.stream('user');
       stream.on('data', async tweet => {
         try {
-          if (!tweet.direct_messages) {
+          if (!tweet.direct_message) {
             await this.processTweet(new Tweet(tweet), true);
 
             dbJSON.writeSync();
