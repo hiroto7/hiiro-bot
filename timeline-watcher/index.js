@@ -164,40 +164,35 @@ module.exports = class TimelineWatcher {
     return Promise.all(ps);
   }
 
-  async getPastTweets(since_id, max_id) {
-    const params = {};
-    params.count = 200;
-    if (since_id) {
-      params.since_id = since_id;
-    }
-    if (max_id) {
-      params.max_id = max_id;
-    }
+  async getPastTweets(url, params) {
+    const pastTweets = [];
+    const p = Object.assign({}, params);
+    p.count = p.count || 200;
 
-    try {
-      const tweets = await this.client.get('statuses/home_timeline', params);
-      if (tweets.length !== 0) {
-        const tweets0 = await this.getPastTweets(
-          since_id,
-          new BigNumber(tweets[tweets.length - 1].id_str).minus(1).toString()
-        );
+    while (true) {
+      try {
+        const tweets = await this.client.get(url, p);
 
-        for (let i = 0; i < tweets.length; i++) {
-          tweets0.push(tweets[tweets.length - i - 1]);
+        if (tweets.length === 0) {
+          break;
+        } else {
+          pastTweets.push(...tweets);
+          p.max_id = new BigNumber(tweets[tweets.length - 1].id_str).minus(1).toString();
         }
-        return tweets0;
-      } else {
-        return [];
+      } catch (error) {
+        console.error(error);
+        break;
       }
-    } catch (error) {
-      console.error(error);
-      return [];
     }
+
+    return pastTweets;
   }
 
   async processPastTweets() {
-    const data = await this.getPastTweets(db.dig('lastTweet').id_str);
-    const tweets = new TweetList(data);
+    const data = await this.getPastTweets('statuses/home_timeline', {
+      since_id: db.dig('lastTweet').id_str
+    });
+    const tweets = new TweetList(data).reverse();
 
     if (tweets.length !== 0) {
       for (let i in tweets) {
