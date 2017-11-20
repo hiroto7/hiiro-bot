@@ -5,8 +5,8 @@ const BigNumber = require('bignumber.js');
 const moment = require('moment');
 require('colors');
 
-const Util = require('../lib/util.js');
-const {Tweet, User, UserList} = require('../lib/tweet.js');
+const {getCurrentScore, halveScore} = require('../lib/util.js');
+const {Tweet, User, DirectMessage, TweetList, UserList} = require('../lib/tweet.js');
 const JSONUpdater = require('../lib/json-updater.js');
 
 const config0 = require('../config/main.json');
@@ -89,10 +89,10 @@ module.exports = class TimelineWatcher {
 
     if (material) {
       let prob = 1;
-      prob *= Util.getCurrentScore(db.dig('scores', 'users', tweet.user.id_str));
+      prob *= getCurrentScore(db.dig('scores', 'users', tweet.user.id_str));
       prob *= Math.pow(2, Math.min(tweet.text.length, 140) / 140);
       if (material.useScore) {
-        prob *= Util.getCurrentScore(db.dig('scores', 'responses', material.name));
+        prob *= getCurrentScore(db.dig('scores', 'responses', material.name));
       }
 
       if (Math.random() < prob) {
@@ -114,10 +114,10 @@ module.exports = class TimelineWatcher {
         }
 
         if (posted) {
-          Util.halveScore(db.dig('scores', 'users', tweet.user.id_str));
+          halveScore(db.dig('scores', 'users', tweet.user.id_str));
           db.dig('scores', 'users', tweet.user.id_str).screen_name = tweet.user.screen_name;
           if (material.useScore) {
-            Util.halveScore(db.dig('scores', 'responses', material.name));
+            halveScore(db.dig('scores', 'responses', material.name));
           }
           dbJSON.writeSync();
         }
@@ -196,11 +196,12 @@ module.exports = class TimelineWatcher {
   }
 
   async processPastTweets() {
-    const tweets = await this.getPastTweets(db.dig('lastTweet').id_str);
+    const data = await this.getPastTweets(db.dig('lastTweet').id_str);
+    const tweets = new TweetList(data);
 
     if (tweets.length !== 0) {
       for (let i in tweets) {
-        await this.processTweet(new Tweet(tweets[i]));
+        await this.processTweet(tweets[i]);
       }
 
       dbJSON.writeSync();
@@ -215,10 +216,13 @@ module.exports = class TimelineWatcher {
       await this.processPastTweets();
 
       const stream = this.client.stream('user');
-      stream.on('data', async tweet => {
+      stream.on('data', async data => {
         try {
-          if (!tweet.direct_message) {
-            await this.processTweet(new Tweet(tweet), true);
+          if (data.direct_message) {
+            const dm = new DirectMessage(data);
+          } else {
+            const tweet = new Tweet(data);
+            await this.processTweet(tweet, true);
 
             dbJSON.writeSync();
             db1JSON.writeSync();

@@ -1,6 +1,6 @@
 'use strict';
 
-const Util = require('../../lib/util.js');
+const {pickRandom, repeatRandom} = require('../../lib/util.js');
 
 const common = {
   regs: [
@@ -14,7 +14,7 @@ const responses = [
   {
     reg: /bot/i,
     getTweetBody: function(tweet) {
-      return tweet.text.match(this.reg)[0] + Util.pickRandom('です', 'だよ');
+      return tweet.text.match(this.reg)[0] + pickRandom('です', 'だよ');
     }
   },
   {
@@ -26,7 +26,7 @@ const responses = [
   {
     name: 'default',
     getTweetBody: function(tweet) {
-      return tweet.text.match(common[0].reg)[0] + Util.repeatRandom('…', 2 / 3);
+      return tweet.text.match(common[0].reg)[0] + repeatRandom('…', 2 / 3);
     },
     useScore: true
   }
