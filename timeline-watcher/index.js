@@ -28,32 +28,20 @@ module.exports = class TimelineWatcher {
   }
 
   async notifyMe(tweet) {
-    function getMessage(tweet, decorates=false) {
+    function getMessage(tweet) {
       const createdAt = new Date(tweet.created_at);
       const titles = [];
 
       titles.push(moment(createdAt).format('YYYY-MM-DD HH:mm:ss'));
-      titles.push(`@${tweet.user.screen_name}`);
+      titles.push(`@${tweet.user.screen_name}`.magenta);
       if (tweet.user.protected) {
         titles.push('P'.red)
       }
 
-      if (decorates) {
-        titles[1] = titles[1].magenta;
-        if (titles[2]) {
-          titles[2] = titles[2].red;
-        }
-      }
-
-      let title = titles.join(' ');
-      if (decorates) {
-        title = title.bold;
-      }
-
-      return `${title}: ${tweet.text}`;
+      return `${titles.join(' ').bold}: ${tweet.text}`;
     }
 
-    console.log(getMessage(tweet, true));
+    console.log(getMessage(tweet));
     fs.appendFileSync('./.log', getMessage(tweet) + '\n');
 
     if (tweet.isProtected()) {
